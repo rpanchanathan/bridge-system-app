@@ -742,6 +742,10 @@
     width: 100%;
   }
 
+  .max-w-md {
+    max-width: 28rem;
+  }
+
   .max-w-4xl {
     max-width: var(--container-4xl);
   }
