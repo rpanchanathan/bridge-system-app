@@ -163,3 +163,64 @@
 
 ---
 
+## 2025-11-22 01:20 IST
+**Session:** Bug fixes + split-view UI trial-and-error mode
+**Thread Context:** 92K tokens (continuation thread)
+
+**CLAUDE.md Changes:**
+- No changes (no architectural fundamentals modified)
+
+**HANDOVER.md Changes:**
+- Updated: Session metadata (new timestamp, token count)
+- Updated: Current status - 3 bugs fixed, split-view in trial-and-error mode
+- Updated: Exact position - all persistence bugs resolved, UI refinement phase
+- Added: Critical context - git workflow for UI experimentation, split-view may change
+- Added: Decisions - column width persistence, git workflow choice, 50/50 split
+- Updated: Files modified - 5 files across workspace/table components
+
+**Key Decisions:**
+- Column width persistence: Added levelWidths/meaningWidth to database schema
+- Git-based workflow for UI experiments (commit before changes, easy revert)
+- 50/50 split-view layout (current, may revert to cell-aligned based on user testing)
+- Close button inside split-view workspace top-right (not top nav bar)
+
+**Work Completed:**
+- FIXED hyperlink crash bug:
+  - Root cause: WorkspaceContextType missing `workspaces` property
+  - RichTextCell.tsx:484 referenced workspaces.map() causing undefined error
+  - Solution: Added workspaces to interface (WorkspaceSystem.tsx:12, 258)
+- FIXED column width persistence:
+  - Root cause: SystemsTable widths local state only, never persisted
+  - Solution: Added levelWidths/meaningWidth to SystemsTableElement schema (database.ts:33-34)
+  - Added props to SystemsTable for initial widths + callbacks (SystemsTable.tsx:26-30,61-65)
+  - Connected to IndexedDB in WorkspaceEditor (passes initialLevelWidths/Meaning, saves on change)
+- FIXED split-view positioning (multiple iterations):
+  - Initially: Positioned at cell's right edge (user request misunderstood)
+  - User clarified: Should align to right of clicked cell, not table
+  - Implemented cell-aligned positioning, committed to git (commit 852ce14)
+  - User changed mind: Wants 50/50 split (trial-and-error mode)
+  - Reverted to 50/50 flex layout, moved Close button to split-view workspace
+- ESTABLISHED git workflow for UI experiments:
+  - User wants to try different approaches quickly
+  - Commit current state before each change (savepoints)
+  - Can easily revert if design doesn't work visually
+  - Applied: Committed cell-aligned, reverted to 50/50 in same session
+
+**Files Modified:**
+- src/db/database.ts:33-34 - Added levelWidths/meaningWidth to SystemsTableElement
+- src/components/systems-table/SystemsTable.tsx:26-30,61-65,138-147 - Added width props/callbacks
+- src/components/workspace-system/WorkspaceEditor.tsx - Connected SystemsTable width persistence
+- src/components/workspace-system/WorkspaceSystem.tsx:12,126,174-178,312,314-356 - Removed splitViewPosition state, 50/50 flex layout, Close button inside split-view
+- src/components/systems-table/RichTextCell.tsx:130-148,333-351 - Updated both split-view click handlers
+
+**Git Commits:**
+- 852ce14: "Split-view: align to clicked cell right edge" (may revert in future)
+
+**Next Session:**
+- User will test 50/50 split-view visually
+- May request reverting to cell-aligned or other positioning
+- Continue git-based trial-and-error approach for UI decisions
+- Templates implementation when UI settled
+
+---
+

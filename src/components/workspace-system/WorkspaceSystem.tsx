@@ -124,7 +124,6 @@ export function WorkspaceSystem() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [splitViewWorkspaceId, setSplitViewWorkspaceId] = useState<string | null>(null);
-  const [splitViewPosition, setSplitViewPosition] = useState<{ x: number; y: number } | null>(null);
   const [popupWorkspace, setPopupWorkspace] = useState<string | null>(null);
   const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -173,10 +172,9 @@ export function WorkspaceSystem() {
       setPopupWorkspace(workspaceName);
       setPopupPosition(position || { x: 100, y: 100 });
     } else if (linkType === 'split-view') {
-      // Open in split view next to active workspace
+      // Open in split view (50/50) next to active workspace
       if (existingWorkspace) {
         setSplitViewWorkspaceId(existingWorkspace.id);
-        setSplitViewPosition(position || { x: window.innerWidth / 2, y: 0 });
       }
     } else {
       // For new-page, navigate to the workspace tab
@@ -311,27 +309,14 @@ export function WorkspaceSystem() {
             ))}
           </div>
         )}
-
-        {/* Close Split View Button */}
-        {splitViewWorkspaceId && (
-          <Button
-            onClick={() => setSplitViewWorkspaceId(null)}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <X className="h-4 w-4" />
-            Close Split View
-          </Button>
-        )}
       </div>
 
       {/* Workspace Content Area */}
       <div className="flex-1 overflow-hidden relative">
         {activeWorkspace ? (
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 flex">
             {/* Main Workspace */}
-            <div className="w-full h-full">
+            <div className={splitViewWorkspaceId ? "w-1/2 h-full border-r border-gray-200" : "w-full h-full"}>
               <WorkspaceEditor
                 key={activeWorkspace.id}
                 workspaceId={activeWorkspace.id}
@@ -343,27 +328,26 @@ export function WorkspaceSystem() {
               />
             </div>
 
-            {/* Split View Workspace - Absolutely positioned */}
-            {splitViewWorkspaceId && splitViewWorkspace && splitViewPosition && (
-              <div
-                className="fixed border-l-2 border-blue-500 bg-white shadow-2xl"
-                style={{
-                  left: `${splitViewPosition.x}px`,
-                  top: `${splitViewPosition.y}px`,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: 50
-                }}
-              >
+            {/* Split View Workspace - 50/50 Layout */}
+            {splitViewWorkspaceId && splitViewWorkspace && (
+              <div className="w-1/2 h-full border-l-2 border-blue-500 bg-white relative">
+                {/* Close Split View Button */}
+                <Button
+                  onClick={() => setSplitViewWorkspaceId(null)}
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 z-10 gap-1"
+                >
+                  <X className="h-4 w-4" />
+                  Close
+                </Button>
+
                 <WorkspaceEditor
                   key={splitViewWorkspace.id}
                   workspaceId={splitViewWorkspace.id}
                   initialTitle={splitViewWorkspace.title}
                   onTitleChange={(newTitle) => handleTitleChange(splitViewWorkspace.id, newTitle)}
-                  onClose={() => {
-                    setSplitViewWorkspaceId(null);
-                    setSplitViewPosition(null);
-                  }}
+                  onClose={() => setSplitViewWorkspaceId(null)}
                   existingWorkspaces={workspaces.map(ws => ws.title)}
                   onNavigateToWorkspace={handleNavigateToWorkspace}
                 />
