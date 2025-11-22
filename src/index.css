@@ -1179,6 +1179,14 @@
     padding-left: calc(var(--spacing) * 2);
   }
 
+  .pl-11 {
+    padding-left: calc(var(--spacing) * 11);
+  }
+
+  .pr-12 {
+    padding-right: calc(var(--spacing) * 12);
+  }
+
   .text-center {
     text-align: center;
   }
