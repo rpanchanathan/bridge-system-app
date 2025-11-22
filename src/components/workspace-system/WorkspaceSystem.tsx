@@ -332,15 +332,13 @@ export function WorkspaceSystem() {
             {splitViewWorkspaceId && splitViewWorkspace && (
               <div className="w-1/2 h-full border-l-2 border-blue-500 bg-white relative">
                 {/* Close Split View Button */}
-                <Button
+                <button
                   onClick={() => setSplitViewWorkspaceId(null)}
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2 z-10 gap-1"
+                  className="absolute top-2 right-2 z-10 p-1 border border-gray-300 rounded hover:bg-gray-100 hover:border-gray-400 transition-colors"
+                  title="Close split view"
                 >
                   <X className="h-4 w-4" />
-                  Close
-                </Button>
+                </button>
 
                 <WorkspaceEditor
                   key={splitViewWorkspace.id}

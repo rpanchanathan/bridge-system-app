@@ -32,7 +32,8 @@ export function RichTextCell({
   const [showTextFormatPanel, setShowTextFormatPanel] = useState(false);
   const [showHyperlinkMenu, setShowHyperlinkMenu] = useState(false);
   const isInternalUpdate = useRef(false);
-  
+  const isClickingLink = useRef(false);
+
   // Try to get workspace context, but don't fail if not available
   let workspaceContext: ReturnType<typeof useWorkspaceContext> | null = null;
   try {
@@ -90,6 +91,17 @@ export function RichTextCell({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Check if clicking on a hyperlink
+    const target = e.target as HTMLElement;
+    const link = target.closest('a[data-workspace]');
+    if (link) {
+      isClickingLink.current = true;
+      // Clear the flag after a short delay
+      setTimeout(() => {
+        isClickingLink.current = false;
+      }, 100);
+    }
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -100,6 +112,11 @@ export function RichTextCell({
     if (link && workspaceContext) {
       e.preventDefault();
       e.stopPropagation();
+
+      // Hide format panel when clicking a link
+      if (onFocusChange) {
+        onFocusChange(false);
+      }
 
       const workspaceName = link.getAttribute('data-workspace');
       const linkType = link.getAttribute('data-link-type') as 'comment' | 'split-view' | 'new-page';
@@ -154,6 +171,11 @@ export function RichTextCell({
   };
 
   const handleFocus = () => {
+    // Don't show format panel when clicking a hyperlink
+    if (isClickingLink.current) {
+      return;
+    }
+
     // Notify parent that this cell is focused and pass the applyFormat function
     if (onFocusChange) {
       onFocusChange(true, applyFormat);
