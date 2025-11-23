@@ -437,6 +437,87 @@ export function RichTextCell({
 
     contentEditableRef.current.focus();
 
+    // Handle list and indent operations (work with cursor position, not saved selection)
+    if (format.listType || format.indent) {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      let node = range.startContainer;
+
+      // Handle list creation
+      if (format.listType) {
+        let blockElement: HTMLElement | null = null;
+        let searchNode = node;
+
+        while (searchNode && searchNode !== contentEditableRef.current) {
+          if (searchNode instanceof HTMLElement &&
+              (searchNode.tagName === 'DIV' || searchNode.tagName === 'P' || searchNode.tagName === 'LI')) {
+            blockElement = searchNode as HTMLElement;
+            break;
+          }
+          searchNode = searchNode.parentNode;
+        }
+
+        if (format.listType === 'bullet' || format.listType === 'number') {
+          const listTag = format.listType === 'bullet' ? 'ul' : 'ol';
+          const list = document.createElement(listTag);
+          list.style.paddingLeft = '30px';
+          list.style.marginLeft = '0px';
+          list.style.listStyleType = format.listType === 'bullet' ? 'disc' : 'decimal';
+
+          const li = document.createElement('li');
+          li.style.display = 'list-item';
+
+          if (blockElement) {
+            while (blockElement.firstChild) {
+              li.appendChild(blockElement.firstChild);
+            }
+            list.appendChild(li);
+            blockElement.replaceWith(list);
+          } else {
+            const contents = contentEditableRef.current.innerHTML;
+            li.innerHTML = contents;
+            list.appendChild(li);
+            contentEditableRef.current.innerHTML = '';
+            contentEditableRef.current.appendChild(list);
+          }
+        }
+
+        const htmlContent = contentEditableRef.current.innerHTML;
+        const textContent = contentEditableRef.current.textContent || '';
+        onChange(textContent, htmlContent);
+        return;
+      }
+
+      // Handle indent
+      if (format.indent) {
+        let searchNode = node;
+
+        while (searchNode && searchNode !== contentEditableRef.current) {
+          if (searchNode instanceof HTMLElement &&
+              (searchNode.tagName === 'DIV' || searchNode.tagName === 'P' || searchNode.tagName === 'LI' ||
+               searchNode.tagName === 'UL' || searchNode.tagName === 'OL')) {
+            const element = searchNode as HTMLElement;
+            const currentMargin = parseInt(element.style.marginLeft || '0');
+
+            if (format.indent === 'increase') {
+              element.style.marginLeft = `${currentMargin + 20}px`;
+            } else if (format.indent === 'decrease') {
+              element.style.marginLeft = `${Math.max(0, currentMargin - 20)}px`;
+            }
+            break;
+          }
+          searchNode = searchNode.parentNode;
+        }
+
+        const htmlContent = contentEditableRef.current.innerHTML;
+        const textContent = contentEditableRef.current.textContent || '';
+        onChange(textContent, htmlContent);
+        return;
+      }
+    }
+
     let workingRange: Range | null = savedSelection;
 
     if (!workingRange) {
