@@ -272,7 +272,12 @@ export function RichTextCell({
       setHasTextSelection(true);
       setSelectedText(selectedText);
       setSavedSelection(saveSelection());
-      
+
+      // Notify parent of updated selection text (even if cell is already focused)
+      if (onFocusChange && isFocused) {
+        onFocusChange(true, applyFormat, applyHyperlink, selectedText);
+      }
+
       // Calculate position for the floating buttons
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
